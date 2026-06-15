@@ -2,7 +2,7 @@ APC-2026-1
 
 Repositório acadêmico da disciplina Algoritmos e Programação de Computadores (APC) – UnB 2026.1
 
-👨‍💻 Sobre mim
+Sobre mim
 
 Olá! Meu nome é Diego Tavares Silva.
 
@@ -16,7 +16,7 @@ Programação em Python;
 Desenvolvimento de simuladores educacionais;
 Uso de Git e GitHub para versionamento;
 Documentação e reflexão sobre o processo de aprendizagem.
-🎯 Objetivos do Repositório
+  Objetivos do Repositório
 
 Este portfólio tem como finalidade:
 
@@ -29,13 +29,13 @@ Servir como evidência prática do aprendizado adquirido.
 
 Durante a disciplina utilizarei diversas ferramentas para desenvolver e testar algoritmos:
 
-🐍 Python 3
-💻 VS Code
-🌐 GitHub
-🔄 Git
-📱 OctoStudio
-🧠 Code.org
-🤖 Tinkercad Circuits
-🏗 Little Man Computer (LMC)
-🔍 Python Tutor
-📊 VisuAlgo
+   Python 3
+   VS Code
+   GitHub
+   Git
+   OctoStudio
+   Code.org
+   Tinkercad Circuits
+   Little Man Computer (LMC)
+   Python Tutor
+   VisuAlgo
