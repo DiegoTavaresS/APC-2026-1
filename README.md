@@ -4,7 +4,7 @@ Repositório acadêmico da disciplina Algoritmos e Programação de Computadores
 
 👨‍💻 Sobre mim
 
-Olá! Meu nome é Diego Silva.
+Olá! Meu nome é Diego Tavares Silva.
 
 Este repositório foi criado para documentar minha trajetória de aprendizagem na disciplina Algoritmos e Programação de Computadores, registrando atividades, simuladores, exercícios e projetos desenvolvidos ao longo do semestre.
 
