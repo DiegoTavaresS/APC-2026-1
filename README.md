@@ -25,7 +25,7 @@ Registrar minha evolução ao longo do semestre;
 Documentar algoritmos e soluções desenvolvidas;
 Compartilhar projetos e simuladores construídos;
 Servir como evidência prática do aprendizado adquirido.
-🛠 Tecnologias e Ferramentas
+ Tecnologias e Ferramentas
 
 Durante a disciplina utilizarei diversas ferramentas para desenvolver e testar algoritmos:
 
