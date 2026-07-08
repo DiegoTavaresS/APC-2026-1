@@ -18,9 +18,6 @@ except Exception:
     pass
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-# Valores especiais da PDAD que não devem entrar nas análises.
-# 99999 = não se aplica, 88888 = não sabe/não declarado, 77777 = recusa.
 SENTINELAS = {99999, 88888, 77777}
 
 COLUNAS = [
@@ -214,7 +211,8 @@ class SistemaPDAD:
         ttk.Label(topo, text="PDAD 2024 — Trabalho e Ocupação", font=("Segoe UI", 18, "bold")).pack(anchor="w")
         ttk.Label(topo, text="Análise do trabalho nos últimos 30 dias, com filtros por localidade, gênero e escolaridade.").pack(anchor="w")
         ttk.Label(topo, text="Sentinelas tratadas: 99999 = não se aplica / 88888 = nao declarado.").pack(anchor="w")
-
+        ttk.Label(topo, text="Aluno: Diego Tavares Silva").pack(anchor="w")
+        
         o, d, f, po, pd, pf = resumo_situacao(self.moradores)
         texto = (
             f"Moradores: {len(self.moradores):,} · Domicílios: {self.total_dom:,} · "
@@ -235,7 +233,7 @@ class SistemaPDAD:
         self.combo_ensino = self.combo(filtros, "Escolaridade:", self.var_ensino, self.opcoes("ensino", "Todos"), 2)
         self.combo_renda = self.combo(filtros, "Renda mínima:", self.var_renda, ["0", "1000", "2000", "5000", "10000"], 3)
         ttk.Button(filtros, text="Aplicar filtros", command=self.atualizar).grid(row=0, column=8, padx=8)
-        ttk.Button(filtros, text="Exportar CSV", command=self.exportar).grid(row=0, column=9, padx=8)
+        ttk.Button(filtros, text="Gerar relatório TXT", command=self.gerar_relatorio).grid(row=0, column=9, padx=8)
 
         # Cards antigos de resumo: aparecem sempre no topo e mudam com os filtros.
         self.cards = ttk.Frame(self.root, padding=(12, 10, 12, 0))
@@ -365,12 +363,82 @@ class SistemaPDAD:
         for ra, media, pessoas, pct in ordenar_manual(ranking, indice=1, decrescente=True)[:15]:
             self.tree.insert("", "end", values=(ra, moeda(media), pessoas, f"{pct:.1f}%"))
 
-    def exportar(self):
-        """Exporta os dados filtrados para CSV."""
-        caminho = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV", "*.csv")])
-        if caminho:
-            self.filtrado.to_csv(caminho, index=False, sep=";", encoding="utf-8-sig")
-            messagebox.showinfo("Exportado", "Arquivo CSV salvo com sucesso!")
+    def gerar_relatorio(self):
+        """Gera um relatório simples em TXT com os dados do filtro atual."""
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Arquivo de texto", "*.txt")]
+        )
+
+        if not caminho:
+            return
+
+        st = estatisticas(self.filtrado)
+        total = st["ocupados"]
+        com_renda = st["com_renda"]
+        pct_renda = (com_renda / total * 100) if total else 0
+
+        filtros_usados = [
+            f"Localidade: {self.var_ra.get()}",
+            f"Gênero: {self.var_genero.get()}",
+            f"Escolaridade: {self.var_ensino.get()}",
+            f"Renda mínima: {moeda(float(self.var_renda.get()))}",
+        ]
+
+        ocupacoes = self.filtrado["ocupacao"].value_counts().head(10)
+
+        base_ranking = self.filtrado.dropna(subset=["renda"])
+        ranking = []
+        total_ranking = len(base_ranking)
+        for ra, grupo in base_ranking.groupby("ra"):
+            if len(grupo) >= 5:
+                ranking.append((
+                    ra,
+                    grupo["renda"].mean(),
+                    len(grupo),
+                    len(grupo) / total_ranking * 100 if total_ranking else 0
+                ))
+        ranking = ordenar_manual(ranking, indice=1, decrescente=True)[:10]
+
+        with open(caminho, "w", encoding="utf-8") as arquivo:
+            arquivo.write("RELATÓRIO SIMPLES — PDAD 2024\n")
+            arquivo.write("Recorte E: Trabalho e Ocupação\n")
+            arquivo.write("=" * 45 + "\n\n")
+
+            arquivo.write("FILTROS APLICADOS\n")
+            arquivo.write("-" * 45 + "\n")
+            for item in filtros_usados:
+                arquivo.write(item + "\n")
+
+            arquivo.write("\nRESUMO DO FILTRO\n")
+            arquivo.write("-" * 45 + "\n")
+            arquivo.write(f"Ocupados filtrados: {total}\n")
+            arquivo.write(f"Pessoas com renda válida: {com_renda} ({pct_renda:.1f}%)\n")
+            arquivo.write(f"Média da renda: {moeda(st['media'])}\n")
+            arquivo.write(f"Mediana da renda: {moeda(st['mediana'])}\n")
+
+            arquivo.write("\nPRINCIPAIS OCUPAÇÕES\n")
+            arquivo.write("-" * 45 + "\n")
+            if ocupacoes.empty:
+                arquivo.write("Sem dados para ocupações.\n")
+            else:
+                soma_ocupacoes = ocupacoes.sum()
+                for ocupacao, quantidade in ocupacoes.items():
+                    pct = quantidade / soma_ocupacoes * 100 if soma_ocupacoes else 0
+                    arquivo.write(f"{ocupacao}: {quantidade} pessoas ({pct:.1f}%)\n")
+
+            arquivo.write("\nRANKING DE LOCALIDADES POR RENDA MÉDIA\n")
+            arquivo.write("-" * 45 + "\n")
+            if not ranking:
+                arquivo.write("Sem dados suficientes para montar o ranking.\n")
+            else:
+                for posicao, (ra, media, pessoas, pct) in enumerate(ranking, start=1):
+                    arquivo.write(
+                        f"{posicao}. {ra} | média: {moeda(media)} | "
+                        f"pessoas: {pessoas} | {pct:.1f}% do filtro\n"
+                    )
+
+        messagebox.showinfo("Relatório gerado", "Relatório TXT salvo com sucesso!")
 
 
 
@@ -432,4 +500,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
